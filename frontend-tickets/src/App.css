@@ -1,0 +1,184 @@
+:root {
+  --neon: #00f3ff;
+  --bg: #0b0b0e;
+  --card: #15151a;
+  --text: #fff;
+}
+
+/* 1. RESETEO AGRESIVO: Para que no queden bordes blancos ni cosas raras */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+.app-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 2. NAVBAR: Fija arriba */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: rgba(0, 0, 0, 0.9);
+  border-bottom: 1px solid #333;
+  height: 70px; /* Altura fija */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.logo { font-size: 1.5rem; font-weight: 900; }
+.logo b, .highlight { color: var(--neon); }
+
+/* 3. GRILLA DE EVENTOS (Lo que arregla que se vean de a 3) */
+.grid-container {
+  width: 100%;
+  max-width: 1600px; /* Permitimos que se ensanche bastante */
+  margin: 0 auto;    /* Centrado horizontal */
+  padding: 40px 20px;
+}
+
+.events-grid {
+  display: grid;
+  gap: 30px;
+  /* FORZAMOS LA CANTIDAD DE COLUMNAS SEGÚN EL DISPOSITIVO */
+  grid-template-columns: repeat(3, 1fr); /* 3 columnas en PC por defecto */
+}
+
+/* TARJETAS */
+.event-card {
+  background: var(--card);
+  border: 1px solid #333;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.event-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--neon);
+  box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+}
+
+.card-image {
+  height: 220px; /* Altura fija para la foto */
+  width: 100%;
+  position: relative;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* IMPORTANTE: Recorta la foto para que llene el espacio */
+}
+
+.stock-badge {
+  position: absolute; top: 10px; right: 10px;
+  background: rgba(0,0,0,0.8); color: var(--neon);
+  padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 0.8rem;
+  border: 1px solid var(--neon);
+}
+
+.card-content { padding: 20px; display: flex; flex-direction: column; gap: 10px; flex-grow: 1; }
+.event-name { margin: 0; font-size: 1.2rem; }
+.card-info { color: #888; font-size: 0.9rem; display: flex; gap: 15px; }
+
+.buy-btn {
+  margin-top: auto; /* Empuja el botón al fondo */
+  width: 100%; padding: 12px;
+  background: var(--neon); color: #000;
+  border: none; font-weight: 900; font-size: 1rem;
+  cursor: pointer; border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.buy-btn:hover { background: #fff; box-shadow: 0 0 15px var(--neon); }
+
+/* 4. FILA VIRTUAL Y TICKET: Ocupan TODA la pantalla */
+.queue-container, .ticket-container {
+  /* Restamos la altura del navbar (70px) para que sea exacto */
+  height: calc(100vh - 70px); 
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+/* Caja de la Fila */
+.queue-box {
+  background: var(--card);
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+  max-width: 500px; width: 100%;
+  border: 1px solid #333;
+  box-shadow: 0 0 50px rgba(0,0,0,0.5);
+}
+
+.spinner-ring {
+  width: 60px; height: 60px;
+  border: 5px solid rgba(255,255,255,0.1);
+  border-top: 5px solid var(--neon);
+  border-radius: 50%; margin: 0 auto 30px;
+  animation: spin 1s linear infinite;
+}
+
+.position-indicator {
+  margin: 30px 0; padding: 20px;
+  background: rgba(0, 243, 255, 0.05);
+  border: 1px solid var(--neon); border-radius: 10px;
+}
+.position-indicator .number { font-size: 4rem; font-weight: 900; line-height: 1; }
+
+/* Caja del Ticket */
+.success-card {
+  background: white; color: black;
+  padding: 30px; border-radius: 20px;
+  text-align: center;
+  max-width: 400px; width: 100%;
+  box-shadow: 0 0 60px rgba(0, 243, 255, 0.3);
+}
+.ticket-data { background: #f0f0f0; padding: 15px; border-radius: 8px; text-align: left; margin: 20px 0; }
+.download-btn { width: 100%; background: black; color: white; padding: 15px; border: none; font-weight: bold; border-radius: 8px; cursor: pointer; }
+
+/* 5. MEDIA QUERIES: Aquí está la magia de la adaptación */
+
+/* TABLETS (Pantallas medianas): 2 Columnas */
+@media (max-width: 1024px) {
+  .events-grid {
+    grid-template-columns: repeat(2, 1fr); /* Forzamos 2 columnas */
+  }
+}
+
+/* CELULARES (Pantallas chicas): 1 Columna y márgenes ajustados */
+@media (max-width: 600px) {
+  .events-grid {
+    grid-template-columns: 1fr; /* 1 sola columna vertical */
+  }
+  
+  .navbar { padding: 1rem; }
+  .grid-container { padding: 20px 15px; }
+  
+  /* Ajustamos textos gigantes en celular */
+  .position-indicator .number { font-size: 3rem; }
+  .hero-section h1 { font-size: 1.8rem; }
+}
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
