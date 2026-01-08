@@ -1,0 +1,16 @@
+# Binarios
+/bin/
+*.exe
+*.exe~
+*.dll
+
+# Dependencias (opcional si usas módulos, pero buena práctica ignorar vendor si no se usa)
+vendor/
+
+# Archivos de entorno (SECRETOS)
+.env
+config.yaml
+
+# IDEs
+.vscode/
+.idea/
