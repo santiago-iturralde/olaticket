@@ -40,7 +40,7 @@ En eventos de alta demanda (partidos de fútbol, conciertos masivos), los sistem
 1.  **Clonar el repositorio**
     ```bash
     git clone https://github.com/santiago-iturralde/olaticket.git
-cd olaticket
+    cd olaticket
     ```
 
 2.  **Levantar servicios (MySQL + Redis)**
