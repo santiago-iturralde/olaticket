@@ -77,9 +77,11 @@ go run cmd/tester/main.go
 
 📸 Screenshots
 Home con Grid Responsiva
-<img width="1919" height="958" alt="1" src="https://github.com/user-attachments/assets/746adf0d-fede-4a87-9d9c-5ee286bd57c1" />
+<img width="1919" height="958" alt="1" src="https://github.com/user-attachments/assets/307806c0-f45c-4c8c-b59c-5b3e2cb82857" />
 
 Fila virtual
-![image](https://github.com/user-attachments/assets/e18b5ae1-b3fe-4aab-814e-a622bbf5b1fe)
+![image](https://github.com/user-attachments/assets/28edce0a-9e6d-469e-ae77-b4ed20553c34)
 
 Ticket QR Generado
+<img width="1919" height="963" alt="3" src="https://github.com/user-attachments/assets/d4fefae2-27b8-4416-b3f8-6360a9b60cce" />
+
