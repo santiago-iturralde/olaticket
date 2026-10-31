@@ -32,8 +32,8 @@ services:
 
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: . # Raíz del repo, como en Railway (ver backend/Dockerfile)
+      dockerfile: backend/Dockerfile
     restart: unless-stopped
     # JWT_SECRET, credenciales de DB y variables de Mercado Pago salen de backend/.env
     env_file:

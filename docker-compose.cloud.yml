@@ -42,8 +42,8 @@ services:
 
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: . # Raíz del repo, como en Railway (ver backend/Dockerfile)
+      dockerfile: backend/Dockerfile
     restart: unless-stopped
     # Todo desde backend/.env. Con DB_HOST externo el backend agrega tls=true solo, y
     # REDIS_URL rediss:// conecta a Upstash con TLS.

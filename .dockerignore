@@ -1,0 +1,10 @@
+# Contexto de build del backend (docker build -f backend/Dockerfile ., Railway y docker-compose).
+# Lista blanca: solo entra backend/, sin secretos ni binarios. El frontend usa su propio
+# contexto (./frontend), así que este archivo no lo afecta.
+*
+!backend/
+backend/.env
+backend/.env.*
+backend/bin/
+backend/vendor/
+backend/**/*.exe
