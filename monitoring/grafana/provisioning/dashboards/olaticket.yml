@@ -1,0 +1,11 @@
+# Carga los dashboards JSON de monitoring/grafana/dashboards en la carpeta "Olaticket".
+apiVersion: 1
+
+providers:
+  - name: olaticket
+    folder: Olaticket
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    options:
+      path: /var/lib/grafana/dashboards

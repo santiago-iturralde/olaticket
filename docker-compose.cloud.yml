@@ -1,0 +1,60 @@
+# Backend contra la nube: TiDB Cloud (MySQL) y Upstash (Redis). Todas las credenciales salen de
+# backend/.env (DB_HOST=*.tidbcloud.com, DB_PORT=4000, DB_NAME, DB_USER, DB_PASSWORD, REDIS_URL...).
+# Archivo independiente del docker-compose.yml local: no levanta MySQL ni Redis propios.
+#
+#   docker compose -f docker-compose.cloud.yml up --build
+#
+# Antes bajá el backend local (docker compose down) para liberar el puerto 8080.
+name: olaticket-cloud
+
+services:
+  # Inicializa la base de TiDB con backend/init.sql y se apaga sola. Si ya está inicializada
+  # (existe la tabla "tickets", la última que crea init.sql) no hace nada: se puede levantar
+  # todas las veces que haga falta sin duplicar los datos de ejemplo.
+  db-init:
+    image: mysql:8.0 # Solo por el cliente mysql; no levanta un servidor
+    restart: "no"
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend/init.sql:/init.sql:ro
+    entrypoint: ["sh", "-c"]
+    # TiDB Cloud exige TLS: VERIFY_IDENTITY valida el certificado y que sea del host, con las
+    # CAs del sistema de la imagen. La contraseña va por MYSQL_PWD para no aparecer en "ps".
+    # ($$ = "$" literal para Docker Compose: las variables las resuelve el shell del contenedor.)
+    command:
+      - |
+        set -eu
+        export MYSQL_PWD="$$DB_PASSWORD"
+        tidb() {
+          mysql --protocol=TCP -h "$$DB_HOST" -P "$${DB_PORT:-4000}" -u "$$DB_USER" \
+            --ssl-mode=VERIFY_IDENTITY --ssl-ca=/etc/pki/tls/certs/ca-bundle.crt \
+            --default-character-set=utf8mb4 "$$@"
+        }
+        echo "Conectando a $$DB_HOST:$${DB_PORT:-4000}, base $$DB_NAME (TLS)..."
+        hecho=$$(tidb -N -B -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '$$DB_NAME' AND table_name = 'tickets'")
+        if [ "$$hecho" != "0" ]; then
+          echo "La base $$DB_NAME ya está inicializada: no se ejecuta init.sql."
+          exit 0
+        fi
+        tidb "$$DB_NAME" < /init.sql
+        echo "init.sql ejecutado en $$DB_NAME."
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    # Todo desde backend/.env. Con DB_HOST externo el backend agrega tls=true solo, y
+    # REDIS_URL rediss:// conecta a Upstash con TLS.
+    env_file:
+      - ./backend/.env
+    environment:
+      PORT: "8080"
+      METRICS_PORT: "9091"
+    ports:
+      - "8080:8080"
+      - "127.0.0.1:9091:9091"
+    depends_on:
+      db-init:
+        condition: service_completed_successfully # Si la inicialización falla, no arranca

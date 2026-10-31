@@ -1,0 +1,19 @@
+# Prometheus de Olaticket (entorno local). Lo levanta docker-compose con el perfil "monitoring".
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # API en Go: /metrics se sirve en el puerto de métricas (METRICS_PORT=9091), no en el
+  # público 8080. "backend" es el nombre del servicio en la red de Docker.
+  - job_name: olaticket-backend
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["backend:9091"]
+        labels:
+          app: olaticket
+
+  # El propio Prometheus (para ver si el scraping anda).
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

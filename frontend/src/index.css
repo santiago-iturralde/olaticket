@@ -3,9 +3,11 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
+  /* El sitio es solo oscuro: con "light dark" los celulares en modo claro pintaban de
+     blanco todo lo que quedaba debajo de la primera pantalla. */
+  color-scheme: dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #0b0b0e;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -24,15 +26,15 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
 
+/* Mismo tamaño en compu (3.2em); en celular baja para no partir palabras. */
 h1 {
-  font-size: 3.2em;
+  font-size: clamp(2rem, 7vw, 3.2em);
   line-height: 1.1;
+  overflow-wrap: break-word;
 }
 
 button {
@@ -52,17 +54,4 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
 }

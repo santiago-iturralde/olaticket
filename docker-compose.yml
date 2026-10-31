@@ -1,0 +1,122 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:-rootpassword}"
+      MYSQL_DATABASE: "${DB_NAME:-stockdb}"
+      MYSQL_USER: "${DB_USER:-user}"
+      MYSQL_PASSWORD: "${DB_PASSWORD:-userpassword}"
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    ports:
+      - "6381:6379"  # 6379/6380 ya los usan otros proyectos locales
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    # JWT_SECRET, credenciales de DB y variables de Mercado Pago salen de backend/.env
+    env_file:
+      - ./backend/.env
+    # Valores propios de la red de Docker (pisan los de backend/.env, que puede traer los de la nube)
+    environment:
+      # Base local completa: mismas credenciales con las que se creó el servicio "db". Si no, con
+      # backend/.env apuntando a TiDB Cloud se mezclan host local y usuario de la nube (Error 1045).
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: "${DB_NAME:-stockdb}"
+      DB_USER: "${DB_USER:-user}"
+      DB_PASSWORD: "${DB_PASSWORD:-userpassword}"
+      DB_TLS: "" # El MySQL del compose no tiene TLS
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_URL: "" # En Docker local siempre el Redis del compose, aunque backend/.env tenga la de la nube
+      PORT: "8080"
+      METRICS_PORT: "9091" # /metrics para Prometheus (no va por el puerto público)
+      FRONTEND_URL: "${FRONTEND_URL:-http://localhost}"
+    ports:
+      - "8080:8080"
+      - "127.0.0.1:9091:9091" # Solo desde esta PC, para mirar /metrics a mano
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: "${VITE_API_URL:-http://localhost:8080}"
+        VITE_RECAPTCHA_SITE_KEY: "${VITE_RECAPTCHA_SITE_KEY:-}"
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+  # --- Observabilidad (Fase 5): solo local. Perfil "monitoring": un `docker compose up`
+  # común no los levanta (en la nube no consumen recursos). Para usarlos:
+  #   docker compose --profile monitoring up -d
+  # o COMPOSE_PROFILES=monitoring en el .env de la raíz.
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=7d # Local: alcanza con una semana
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    depends_on:
+      - backend
+
+  grafana:
+    image: grafana/grafana:11.3.1
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: "${GRAFANA_ADMIN_USER:-admin}"
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD:-admin}"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/olaticket-api.json
+    volumes:
+      # Data Source (Prometheus por defecto) y dashboard, cargados al arrancar
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3050:3000"
+    depends_on:
+      - prometheus
+
+volumes:
+  db_data:
+  prometheus_data:
+  grafana_data:

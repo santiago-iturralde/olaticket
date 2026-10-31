@@ -1,0 +1,5 @@
+# Secretos: ningún .env va al repositorio (raíz, backend/ y frontend/).
+# Lo que hay que configurar está documentado en los .env.example.
+.env
+.env.*
+!.env.example

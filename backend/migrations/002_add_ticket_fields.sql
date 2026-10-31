@@ -1,0 +1,3 @@
+ALTER TABLE ordenes
+    ADD COLUMN usado_en DATETIME NULL,
+    ADD COLUMN qr_token VARCHAR(512) NULL;
