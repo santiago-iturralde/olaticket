@@ -572,11 +572,13 @@ func (r *Repository) ReserveStock(ctx context.Context, orderID, eventID int64, t
 	}
 	defer tx.Rollback()
 
-	// Lock compartido sobre el evento: mantiene el orden evento -> sectores -> orden que usan
-	// UpdateEvent y DeleteEvent (FOR UPDATE), así una edición o un borrado en paralelo
-	// espera a la reserva (o al revés) en vez de terminar en deadlock.
+	// Lock sobre el evento: mantiene el orden evento -> sectores -> orden que usan
+	// UpdateEvent y DeleteEvent, así una edición o un borrado en paralelo espera a la
+	// reserva (o al revés) en vez de terminar en deadlock. Es FOR UPDATE y no FOR SHARE
+	// porque TiDB no implementa los locks compartidos (Error 1235); con un solo worker
+	// reservando, que sea exclusivo no frena nada.
 	var lockedID int64
-	err = tx.QueryRowContext(ctx, "SELECT id FROM eventos WHERE id = ? FOR SHARE", eventID).Scan(&lockedID)
+	err = tx.QueryRowContext(ctx, "SELECT id FROM eventos WHERE id = ? FOR UPDATE", eventID).Scan(&lockedID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return domain.ErrNotEnoughStock // El evento se eliminó mientras la orden esperaba en la fila
 	}
