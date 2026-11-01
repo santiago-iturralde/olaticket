@@ -49,21 +49,18 @@ func Start(rdb *redis.Client, repo domain.EventRepository, reservations *reserva
 		// 2. Intentar reservar el stock de todos los sectores del carrito
 		// (descuento + estado 'reservada' en una transacción: todo o nada)
 		err = repo.ReserveStock(ctx, order.OrderID, order.EventID, int(reservation.TTL.Seconds()))
-		if err != nil {
-			if err != domain.ErrNotEnoughStock {
-				fmt.Printf("❌ Error MySQL: %v\n", err)
-				continue
-			}
-			// SIN STOCK -> RECHAZAMOS LA ORDEN
+		if err == domain.ErrNotEnoughStock {
 			fmt.Println("⛔ RECHAZADA (Sin Stock)")
-			if err := repo.UpdateOrderStatus(ctx, order.OrderID, domain.OrderRejected, ""); err != nil {
-				log.Printf("Error actualizando estado de la orden #%d: %v", order.OrderID, err)
-				continue
-			}
-			reservations.Publish(ctx, order.OrderID, reservation.StatusUpdate{
-				Status:  domain.OrderRejected,
-				Message: "Lo sentimos, no quedan entradas suficientes en alguno de los sectores elegidos.",
-			})
+			reject(ctx, repo, reservations, order.OrderID,
+				"Lo sentimos, no quedan entradas suficientes en alguno de los sectores elegidos.")
+			continue
+		}
+		if err != nil {
+			// ReserveStock es una transacción: si falla no descontó stock. Se rechaza la orden
+			// para que la fila virtual no quede esperando para siempre; el comprador reintenta.
+			fmt.Printf("❌ Error MySQL: %v\n", err)
+			reject(ctx, repo, reservations, order.OrderID,
+				"No pudimos procesar tu compra. Intentá de nuevo en unos minutos.")
 			continue
 		}
 
@@ -78,4 +75,17 @@ func Start(rdb *redis.Client, repo domain.EventRepository, reservations *reserva
 			ExpiresIn: int(reservation.TTL.Seconds()),
 		})
 	}
+}
+
+// reject marca la orden como rechazada y avisa al navegador que la espera en la fila.
+// El aviso sale aunque falle la escritura en MySQL (ej. la base caída): mejor un mensaje
+// de error que una fila virtual cargando sin fin. La orden queda 'pendiente', sin stock.
+func reject(ctx context.Context, repo domain.EventRepository, reservations *reservation.Service, orderID int64, message string) {
+	if err := repo.UpdateOrderStatus(ctx, orderID, domain.OrderRejected, ""); err != nil {
+		log.Printf("Error actualizando estado de la orden #%d: %v", orderID, err)
+	}
+	reservations.Publish(ctx, orderID, reservation.StatusUpdate{
+		Status:  domain.OrderRejected,
+		Message: message,
+	})
 }
