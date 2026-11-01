@@ -3,7 +3,7 @@ import PasswordInput from './PasswordInput'
 import PasswordRules from './PasswordRules'
 import { isPasswordValid } from './passwordPolicy'
 
-const API_URL = import.meta.env.VITE_API_URL
+import { API_URL } from './apiConfig'
 
 // Vista a la que llega el enlace del email (/?reset_token=...).
 function ResetPassword({ token, onDone, onGoToForgotPassword }) {

@@ -4,7 +4,7 @@ import { FaCamera, FaSignOutAlt } from 'react-icons/fa'
 import ScanResult from './ScanResult'
 import { validateTicket } from './scanApi'
 
-const API_URL = import.meta.env.VITE_API_URL
+import { API_URL } from './apiConfig'
 const READER_ID = 'scanner-app-reader'
 const EVENT_KEY = 'scanner_event_id'
 

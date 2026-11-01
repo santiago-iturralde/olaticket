@@ -3,7 +3,7 @@ import ReCAPTCHA from 'react-google-recaptcha'
 import PasswordInput from './PasswordInput'
 import { RECAPTCHA_SITE_KEY } from './recaptcha'
 
-const API_URL = import.meta.env.VITE_API_URL
+import { API_URL } from './apiConfig'
 
 function Login({ onAuthenticated, onGoToRegister, onGoToForgotPassword, notice }) {
   const [email, setEmail] = useState('')

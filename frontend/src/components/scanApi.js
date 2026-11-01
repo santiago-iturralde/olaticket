@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL
+import { API_URL } from './apiConfig'
 
 const timeFormatter = new Intl.DateTimeFormat('es-AR', { hour: '2-digit', minute: '2-digit' })
 

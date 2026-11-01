@@ -5,7 +5,7 @@ import PasswordRules from './PasswordRules'
 import { isPasswordValid } from './passwordPolicy'
 import { RECAPTCHA_SITE_KEY } from './recaptcha'
 
-const API_URL = import.meta.env.VITE_API_URL
+import { API_URL } from './apiConfig'
 
 const COUNTRIES = [
   { name: 'Argentina', dialCode: '+54' },

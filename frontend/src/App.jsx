@@ -12,7 +12,7 @@ import EventForm from './components/EventForm'
 import { PANEL_ROLES, SCANNER_APP_PATH, SCANNER_ROLES, canAccessPanel, decodeTokenClaims } from './components/session'
 import './App.css'
 
-const API_URL = import.meta.env.VITE_API_URL
+import { API_URL } from './components/apiConfig'
 
 // El escáner (html5-qrcode) pesa más que el resto de la tienda: se baja solo al abrirlo.
 const EventScanner = lazy(() => import('./components/EventScanner'))

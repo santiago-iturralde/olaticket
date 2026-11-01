@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { FaArrowLeft, FaPlus, FaTrashAlt, FaImage } from 'react-icons/fa'
 
-const API_URL = import.meta.env.VITE_API_URL
+import { API_URL } from './apiConfig'
 
 // Mismos límites que valida el backend (eventos.nombre VARCHAR(100), sectores.nombre VARCHAR(60),
 // sectores.precio DECIMAL(10,2)).

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { FaPlus, FaPen, FaTrashAlt } from 'react-icons/fa'
 
-const API_URL = import.meta.env.VITE_API_URL
+import { API_URL } from './apiConfig'
 
 // El panel gestiona solo al equipo. Los clientes (rol usuario) se registran solos en la
 // tienda: ni se listan ni se crean acá, y el backend rechaza cualquier cambio sobre ellos.

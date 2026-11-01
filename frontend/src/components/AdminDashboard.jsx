@@ -4,7 +4,7 @@ import { FaPlus, FaPen, FaTrashAlt, FaQrcode } from 'react-icons/fa'
 import UsersAdmin from './UsersAdmin'
 import ProductorasAdmin from './ProductorasAdmin'
 
-const API_URL = import.meta.env.VITE_API_URL
+import { API_URL } from './apiConfig'
 
 const priceFormatter = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' })
 const numberFormatter = new Intl.NumberFormat('es-AR')
